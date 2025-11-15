@@ -1,73 +1,111 @@
-# Welcome to your Lovable project
+# Tetris Battle - Player vs AI
 
-## Project info
+A modern, glassmorphic Tetris game featuring Player vs Computer gameplay with stunning visual effects and smooth animations.
 
-**URL**: https://lovable.dev/projects/e6f1838f-c8a4-40ac-b938-e870e9eff9eb
+![Tetris Battle](https://img.shields.io/badge/React-18.3.1-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue) ![Vite](https://img.shields.io/badge/Vite-5.x-purple)
 
-## How can I edit this code?
+## 🎮 Features
 
-There are several ways of editing your application.
+- **Dual Gameplay**: Play against an intelligent AI opponent simultaneously
+- **Smart AI**: Computer player uses strategic evaluation algorithms to make optimal moves
+- **Modern UI/UX**: Glassmorphism design with neon-colored pieces and smooth animations
+- **Full Tetris Mechanics**: 
+  - All 7 classic Tetromino pieces (I, O, T, S, Z, J, L)
+  - Piece rotation and hard drop
+  - Line clearing with score calculation
+  - Progressive difficulty with level system
+- **Real-time Statistics**: Track score, level, and lines cleared for both players
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 
-**Use Lovable**
+## 🎯 Game Controls
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e6f1838f-c8a4-40ac-b938-e870e9eff9eb) and start prompting.
+| Key | Action |
+|-----|--------|
+| `←` | Move left |
+| `→` | Move right |
+| `↓` | Soft drop |
+| `↑` | Rotate piece |
+| `Space` | Hard drop |
+| Pause button | Pause/Resume game |
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js (v16 or higher)
+- npm or yarn
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+1. Clone the repository:
+```bash
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. Install dependencies:
+```bash
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Open your browser and navigate to `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🛠️ Built With
 
-**Use GitHub Codespaces**
+- **React** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Fast build tool and dev server
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - High-quality UI components
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🎨 Design Features
 
-## What technologies are used for this project?
+- **Glassmorphism**: Frosted glass UI panels with backdrop blur effects
+- **Neon Colors**: Vibrant, glowing Tetris pieces with custom shadows
+- **Dark Gradients**: Deep blue to purple background gradient
+- **Smooth Animations**: Fluid transitions and piece movements
 
-This project is built with:
+## 🧠 AI Algorithm
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The computer opponent uses a position evaluation algorithm that considers:
+- **Hole Detection**: Penalizes creating holes in the stack
+- **Height Penalty**: Prefers keeping the stack low
+- **Line Clearing Bonus**: Rewards moves that clear lines
+- **Strategic Placement**: Evaluates all possible rotations and positions
 
-## How can I deploy this project?
+## 📦 Build for Production
 
-Simply open [Lovable](https://lovable.dev/projects/e6f1838f-c8a4-40ac-b938-e870e9eff9eb) and click on Share -> Publish.
+```bash
+npm run build
+```
 
-## Can I connect a custom domain to my Lovable project?
+The built files will be in the `dist` directory, ready for deployment.
 
-Yes, you can!
+## 🎯 Scoring System
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Single Line**: 100 points × current level
+- **Multiple Lines**: Bonus multiplier for clearing 2+ lines
+- **Hard Drop**: Additional points based on drop distance
+- **Level Up**: Every 10 lines cleared
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+
+## 👨‍💻 Author
+
+Your Name - [Your GitHub Profile](https://github.com/yourusername)
+
+## 🙏 Acknowledgments
+
+- Classic Tetris game design by Alexey Pajitnov
+- Modern UI/UX inspired by glassmorphism design trends
