@@ -103,7 +103,7 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 👨‍💻 Author
 
-Your Name - [Your GitHub Profile](https://github.com/yourusername)
+Rowella Thea Escartin
 
 ## 🙏 Acknowledgments
 
