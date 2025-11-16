@@ -42,13 +42,13 @@ All colors MUST be HSL.
     --glass-bg: 340 50% 96% / 0.6;
     --glass-border: 340 75% 55% / 0.2;
     
-    /* Neon colors for Tetris pieces */
-    --neon-cyan: 180 100% 50%;
-    --neon-blue: 220 100% 60%;
-    --neon-orange: 30 100% 60%;
-    --neon-yellow: 60 100% 60%;
-    --neon-green: 120 100% 50%;
-    --neon-purple: 280 80% 60%;
+    /* Heart theme colors for Tetris pieces */
+    --neon-cyan: 350 100% 70%;
+    --neon-blue: 340 90% 65%;
+    --neon-orange: 0 90% 70%;
+    --neon-yellow: 330 95% 75%;
+    --neon-green: 340 85% 60%;
+    --neon-purple: 350 100% 65%;
     --neon-red: 0 100% 60%;
     
     /* Gradients */

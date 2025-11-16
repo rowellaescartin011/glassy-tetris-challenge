@@ -24,6 +24,14 @@ const Index = () => {
     resetGame: resetComputerGame,
   } = useComputerPlayer();
 
+  // Sync game over state - when player loses, computer also stops
+  useEffect(() => {
+    if (playerState.isGameOver && !computerState.isGameOver) {
+      // Stop computer game when player loses
+      toggleComputerPause();
+    }
+  }, [playerState.isGameOver, computerState.isGameOver, toggleComputerPause]);
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (playerState.isGameOver || playerState.isPaused) return;
