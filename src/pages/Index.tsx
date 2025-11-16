@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTetrisGame } from '@/hooks/useTetrisGame';
 import { useComputerPlayer } from '@/hooks/useComputerPlayer';
 import { TetrisBoard } from '@/components/TetrisBoard';
 import { NextPieceDisplay } from '@/components/NextPieceDisplay';
 import { GameStats } from '@/components/GameStats';
 import { GameControls } from '@/components/GameControls';
+import { HeartParticles } from '@/components/HeartParticles';
 
 const Index = () => {
   const {
@@ -24,6 +25,11 @@ const Index = () => {
     resetGame: resetComputerGame,
   } = useComputerPlayer();
 
+  const [showPlayerParticles, setShowPlayerParticles] = useState(false);
+  const [showComputerParticles, setShowComputerParticles] = useState(false);
+  const [prevPlayerLines, setPrevPlayerLines] = useState(0);
+  const [prevComputerLines, setPrevComputerLines] = useState(0);
+
   // Sync game over state - when player loses, computer also stops
   useEffect(() => {
     if (playerState.isGameOver && !computerState.isGameOver) {
@@ -31,6 +37,22 @@ const Index = () => {
       toggleComputerPause();
     }
   }, [playerState.isGameOver, computerState.isGameOver, toggleComputerPause]);
+
+  // Track line clears for player
+  useEffect(() => {
+    if (playerState.linesCleared > prevPlayerLines) {
+      setShowPlayerParticles(true);
+    }
+    setPrevPlayerLines(playerState.linesCleared);
+  }, [playerState.linesCleared, prevPlayerLines]);
+
+  // Track line clears for computer
+  useEffect(() => {
+    if (computerState.linesCleared > prevComputerLines) {
+      setShowComputerParticles(true);
+    }
+    setPrevComputerLines(computerState.linesCleared);
+  }, [computerState.linesCleared, prevComputerLines]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -72,10 +94,19 @@ const Index = () => {
   const handleReset = () => {
     resetPlayerGame();
     resetComputerGame();
+    setPrevPlayerLines(0);
+    setPrevComputerLines(0);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      {showPlayerParticles && (
+        <HeartParticles onComplete={() => setShowPlayerParticles(false)} />
+      )}
+      {showComputerParticles && (
+        <HeartParticles onComplete={() => setShowComputerParticles(false)} />
+      )}
+      
       <div className="w-full max-w-7xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold neon-text mb-2" style={{ color: 'hsl(var(--neon-purple))' }}>
