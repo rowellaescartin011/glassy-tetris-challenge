@@ -17,10 +17,13 @@ export const NextPieceDisplay = ({ nextPiece }: NextPieceDisplayProps) => {
               {row.map((cell, x) => (
                 <div
                   key={`${y}-${x}`}
-                  className="w-4 h-4 rounded-sm transition-all"
+                  className="w-4 h-4 rounded-sm transition-all backdrop-blur-sm"
                   style={{
                     backgroundColor: cell ? nextPiece.color : 'transparent',
-                    boxShadow: cell ? `0 0 8px ${nextPiece.color}` : 'none',
+                    boxShadow: cell 
+                      ? `0 0 15px ${nextPiece.color}, 0 0 30px ${nextPiece.color}, inset 0 0 8px rgba(255, 255, 255, 0.5)` 
+                      : 'none',
+                    border: cell ? `1px solid ${nextPiece.color}` : 'none',
                   }}
                 />
               ))}
