@@ -54,7 +54,7 @@ const clearLines = (board: Board): { newBoard: Board; linesCleared: number } => 
   return { newBoard, linesCleared };
 };
 
-export const useTetrisGame2P = () => {
+export const useTetrisGame2P = (enabled: boolean = true) => {
   const [gameState, setGameState] = useState<GameState>({
     board: createEmptyBoard(),
     currentPiece: createTetromino(),
@@ -193,7 +193,7 @@ export const useTetrisGame2P = () => {
   }, []);
 
   useEffect(() => {
-    if (gameState.isGameOver || gameState.isPaused) return;
+    if (!enabled || gameState.isGameOver || gameState.isPaused) return;
 
     const speed = Math.max(100, 1000 - (gameState.level - 1) * 100);
     const gameLoop = setInterval(() => {
@@ -201,7 +201,7 @@ export const useTetrisGame2P = () => {
     }, speed);
 
     return () => clearInterval(gameLoop);
-  }, [gameState.level, gameState.isGameOver, gameState.isPaused, moveDown]);
+  }, [enabled, gameState.level, gameState.isGameOver, gameState.isPaused, moveDown]);
 
   return {
     gameState,
