@@ -12,7 +12,7 @@ const Index = () => {
   const [gameMode, setGameMode] = useState<'1-player' | '2-player' | null>(null);
   
   const player1 = useTetrisGame();
-  const player2 = useTetrisGame2P();
+  const player2 = useTetrisGame2P(gameMode === '2-player');
 
   const [showPlayer1Particles, setShowPlayer1Particles] = useState(false);
   const [showPlayer2Particles, setShowPlayer2Particles] = useState(false);
