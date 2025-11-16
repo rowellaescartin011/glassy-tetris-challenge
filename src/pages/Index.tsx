@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTetrisGame } from '@/hooks/useTetrisGame';
-import { useComputerPlayer } from '@/hooks/useComputerPlayer';
+import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { TetrisBoard } from '@/components/TetrisBoard';
 import { NextPieceDisplay } from '@/components/NextPieceDisplay';
 import { GameStats } from '@/components/GameStats';
 import { GameControls } from '@/components/GameControls';
 import { HeartParticles } from '@/components/HeartParticles';
+import { MultiplayerLobby } from '@/components/MultiplayerLobby';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const {
@@ -20,23 +22,20 @@ const Index = () => {
   } = useTetrisGame();
 
   const {
-    gameState: computerState,
-    togglePause: toggleComputerPause,
-    resetGame: resetComputerGame,
-  } = useComputerPlayer();
+    roomCode,
+    isHost,
+    opponentConnected,
+    opponentGameState,
+    createRoom,
+    joinRoom,
+    leaveRoom,
+  } = useMultiplayerGame(playerState);
 
   const [showPlayerParticles, setShowPlayerParticles] = useState(false);
-  const [showComputerParticles, setShowComputerParticles] = useState(false);
+  const [showOpponentParticles, setShowOpponentParticles] = useState(false);
   const [prevPlayerLines, setPrevPlayerLines] = useState(0);
-  const [prevComputerLines, setPrevComputerLines] = useState(0);
-
-  // Sync game over state - when player loses, computer also stops
-  useEffect(() => {
-    if (playerState.isGameOver && !computerState.isGameOver) {
-      // Stop computer game when player loses
-      toggleComputerPause();
-    }
-  }, [playerState.isGameOver, computerState.isGameOver, toggleComputerPause]);
+  const [prevOpponentLines, setPrevOpponentLines] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
 
   // Track line clears for player
   useEffect(() => {
@@ -46,13 +45,22 @@ const Index = () => {
     setPrevPlayerLines(playerState.linesCleared);
   }, [playerState.linesCleared, prevPlayerLines]);
 
-  // Track line clears for computer
+  // Track line clears for opponent
   useEffect(() => {
-    if (computerState.linesCleared > prevComputerLines) {
-      setShowComputerParticles(true);
+    if (opponentGameState && opponentGameState.linesCleared > prevOpponentLines) {
+      setShowOpponentParticles(true);
     }
-    setPrevComputerLines(computerState.linesCleared);
-  }, [computerState.linesCleared, prevComputerLines]);
+    if (opponentGameState) {
+      setPrevOpponentLines(opponentGameState.linesCleared);
+    }
+  }, [opponentGameState?.linesCleared, prevOpponentLines]);
+
+  // Start game when both players are connected
+  useEffect(() => {
+    if (opponentConnected && !gameStarted) {
+      setGameStarted(true);
+    }
+  }, [opponentConnected, gameStarted]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -88,23 +96,44 @@ const Index = () => {
 
   const handleTogglePause = () => {
     togglePlayerPause();
-    toggleComputerPause();
   };
 
   const handleReset = () => {
     resetPlayerGame();
-    resetComputerGame();
     setPrevPlayerLines(0);
-    setPrevComputerLines(0);
+    setPrevOpponentLines(0);
+    setGameStarted(false);
   };
+
+  const handleLeaveRoom = async () => {
+    await leaveRoom();
+    setGameStarted(false);
+    resetPlayerGame();
+    setPrevPlayerLines(0);
+    setPrevOpponentLines(0);
+  };
+
+  if (!gameStarted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <MultiplayerLobby
+          onCreateRoom={createRoom}
+          onJoinRoom={joinRoom}
+          roomCode={roomCode}
+          isHost={isHost}
+          opponentConnected={opponentConnected}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       {showPlayerParticles && (
         <HeartParticles onComplete={() => setShowPlayerParticles(false)} />
       )}
-      {showComputerParticles && (
-        <HeartParticles onComplete={() => setShowComputerParticles(false)} />
+      {showOpponentParticles && (
+        <HeartParticles onComplete={() => setShowOpponentParticles(false)} />
       )}
       
       <div className="w-full max-w-7xl">
@@ -126,11 +155,19 @@ const Index = () => {
         </div>
 
         {/* Game Over Message */}
-        {playerState.isGameOver && (
+        {(playerState.isGameOver || opponentGameState?.isGameOver) && (
           <div className="glass-card text-center py-6 mb-6 max-w-md mx-auto">
             <p className="text-2xl font-bold text-destructive neon-text mb-2">GAME OVER</p>
             <p className="text-lg text-foreground font-semibold">
-              {playerState.score > computerState.score ? '🎉 You Win!' : computerState.score > playerState.score ? '🤖 Computer Wins!' : "It's a Tie!"}
+              {playerState.isGameOver && !opponentGameState?.isGameOver
+                ? '😢 You Lost!'
+                : !playerState.isGameOver && opponentGameState?.isGameOver
+                ? '🎉 You Win!'
+                : playerState.score > (opponentGameState?.score || 0)
+                ? '🎉 You Win!'
+                : (opponentGameState?.score || 0) > playerState.score
+                ? '😢 You Lost!'
+                : "It's a Tie!"}
             </p>
             <div className="mt-4 flex justify-center gap-8 text-sm">
               <div>
@@ -138,10 +175,17 @@ const Index = () => {
                 <p className="text-xl font-bold text-primary">{playerState.score.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Computer Score</p>
-                <p className="text-xl font-bold text-secondary">{computerState.score.toLocaleString()}</p>
+                <p className="text-muted-foreground">Opponent Score</p>
+                <p className="text-xl font-bold text-secondary">{opponentGameState?.score.toLocaleString() || 0}</p>
               </div>
             </div>
+            <Button
+              onClick={handleLeaveRoom}
+              className="mt-4"
+              style={{ backgroundColor: 'hsl(var(--neon-pink))' }}
+            >
+              Leave Room
+            </Button>
           </div>
         )}
 
@@ -170,25 +214,28 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Computer Side */}
+          {/* Opponent Side */}
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-2xl font-bold neon-text" style={{ color: 'hsl(var(--neon-orange))' }}>
-                COMPUTER
+                OPPONENT
               </h2>
             </div>
             
             <div className="grid grid-cols-[1fr,auto] gap-4">
-              <TetrisBoard board={computerState.board} currentPiece={computerState.currentPiece} />
+              <TetrisBoard 
+                board={opponentGameState?.board || playerState.board} 
+                currentPiece={opponentGameState?.currentPiece || null} 
+              />
               
               <div className="space-y-4">
                 <GameStats
-                  score={computerState.score}
-                  level={computerState.level}
-                  linesCleared={computerState.linesCleared}
+                  score={opponentGameState?.score || 0}
+                  level={opponentGameState?.level || 1}
+                  linesCleared={opponentGameState?.linesCleared || 0}
                   playerName="Stats"
                 />
-                <NextPieceDisplay nextPiece={computerState.nextPiece} />
+                <NextPieceDisplay nextPiece={opponentGameState?.nextPiece || null} />
               </div>
             </div>
           </div>
