@@ -20,10 +20,7 @@ export const NextPieceDisplay = ({ nextPiece }: NextPieceDisplayProps) => {
                   className="w-4 h-4 rounded-sm transition-all backdrop-blur-sm"
                   style={{
                     backgroundColor: cell ? nextPiece.color : 'transparent',
-                    boxShadow: cell 
-                      ? `0 0 15px ${nextPiece.color}, 0 0 30px ${nextPiece.color}, inset 0 0 8px rgba(255, 255, 255, 0.5)` 
-                      : 'none',
-                    border: cell ? `1px solid ${nextPiece.color}` : 'none',
+                    border: cell ? `2px solid ${nextPiece.color}` : 'none',
                   }}
                 />
               ))}

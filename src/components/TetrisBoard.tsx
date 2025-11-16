@@ -37,10 +37,7 @@ export const TetrisBoard = ({ board, currentPiece }: TetrisBoardProps) => {
                 className="w-6 h-6 rounded-sm transition-all duration-150 backdrop-blur-sm"
                 style={{
                   backgroundColor: cell || 'rgba(255, 255, 255, 0.05)',
-                  boxShadow: cell 
-                    ? `0 0 20px ${cell}, 0 0 40px ${cell}, inset 0 0 10px rgba(255, 255, 255, 0.5)` 
-                    : 'inset 0 0 5px rgba(255, 255, 255, 0.03)',
-                  border: cell ? `1px solid ${cell}` : '1px solid rgba(255, 255, 255, 0.05)',
+                  border: cell ? `2px solid ${cell}` : '1px solid rgba(255, 255, 255, 0.05)',
                 }}
               />
             ))}
