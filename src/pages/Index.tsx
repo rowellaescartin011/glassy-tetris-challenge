@@ -1,139 +1,147 @@
 import { useEffect, useState } from 'react';
 import { useTetrisGame } from '@/hooks/useTetrisGame';
-import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
+import { useTetrisGame2P } from '@/hooks/useTetrisGame2P';
 import { TetrisBoard } from '@/components/TetrisBoard';
 import { NextPieceDisplay } from '@/components/NextPieceDisplay';
 import { GameStats } from '@/components/GameStats';
 import { GameControls } from '@/components/GameControls';
 import { HeartParticles } from '@/components/HeartParticles';
-import { MultiplayerLobby } from '@/components/MultiplayerLobby';
-import { Button } from '@/components/ui/button';
+import { GameModeSelector } from '@/components/GameModeSelector';
 
 const Index = () => {
-  const {
-    gameState: playerState,
-    moveLeft,
-    moveRight,
-    moveDown,
-    rotate,
-    hardDrop,
-    togglePause: togglePlayerPause,
-    resetGame: resetPlayerGame,
-  } = useTetrisGame();
+  const [gameMode, setGameMode] = useState<'1-player' | '2-player' | null>(null);
+  
+  const player1 = useTetrisGame();
+  const player2 = useTetrisGame2P();
 
-  const {
-    roomCode,
-    isHost,
-    opponentConnected,
-    opponentGameState,
-    createRoom,
-    joinRoom,
-    leaveRoom,
-  } = useMultiplayerGame(playerState);
+  const [showPlayer1Particles, setShowPlayer1Particles] = useState(false);
+  const [showPlayer2Particles, setShowPlayer2Particles] = useState(false);
+  const [prevPlayer1Lines, setPrevPlayer1Lines] = useState(0);
+  const [prevPlayer2Lines, setPrevPlayer2Lines] = useState(0);
 
-  const [showPlayerParticles, setShowPlayerParticles] = useState(false);
-  const [showOpponentParticles, setShowOpponentParticles] = useState(false);
-  const [prevPlayerLines, setPrevPlayerLines] = useState(0);
-  const [prevOpponentLines, setPrevOpponentLines] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
-
-  // Track line clears for player
+  // Track line clears for player 1
   useEffect(() => {
-    if (playerState.linesCleared > prevPlayerLines) {
-      setShowPlayerParticles(true);
+    if (player1.gameState.linesCleared > prevPlayer1Lines) {
+      setShowPlayer1Particles(true);
     }
-    setPrevPlayerLines(playerState.linesCleared);
-  }, [playerState.linesCleared, prevPlayerLines]);
+    setPrevPlayer1Lines(player1.gameState.linesCleared);
+  }, [player1.gameState.linesCleared, prevPlayer1Lines]);
 
-  // Track line clears for opponent
+  // Track line clears for player 2
   useEffect(() => {
-    if (opponentGameState && opponentGameState.linesCleared > prevOpponentLines) {
-      setShowOpponentParticles(true);
+    if (gameMode === '2-player' && player2.gameState.linesCleared > prevPlayer2Lines) {
+      setShowPlayer2Particles(true);
     }
-    if (opponentGameState) {
-      setPrevOpponentLines(opponentGameState.linesCleared);
-    }
-  }, [opponentGameState?.linesCleared, prevOpponentLines]);
+    setPrevPlayer2Lines(player2.gameState.linesCleared);
+  }, [player2.gameState.linesCleared, prevPlayer2Lines, gameMode]);
 
-  // Start game when both players are connected
-  useEffect(() => {
-    if (opponentConnected && !gameStarted) {
-      setGameStarted(true);
-    }
-  }, [opponentConnected, gameStarted]);
-
+  // Player 1 controls (Arrow keys)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (playerState.isGameOver || playerState.isPaused) return;
+      if (player1.gameState.isGameOver || player1.gameState.isPaused) return;
 
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault();
-          moveLeft();
+          player1.moveLeft();
           break;
         case 'ArrowRight':
           e.preventDefault();
-          moveRight();
+          player1.moveRight();
           break;
         case 'ArrowDown':
           e.preventDefault();
-          moveDown();
+          player1.moveDown();
           break;
         case 'ArrowUp':
           e.preventDefault();
-          rotate();
+          player1.rotate();
           break;
         case ' ':
           e.preventDefault();
-          hardDrop();
+          player1.hardDrop();
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [moveLeft, moveRight, moveDown, rotate, hardDrop, playerState.isGameOver, playerState.isPaused]);
+  }, [player1]);
+
+  // Player 2 controls (WASD)
+  useEffect(() => {
+    if (gameMode !== '2-player') return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (player2.gameState.isGameOver || player2.gameState.isPaused) return;
+
+      switch (e.key.toLowerCase()) {
+        case 'a':
+          e.preventDefault();
+          player2.moveLeft();
+          break;
+        case 'd':
+          e.preventDefault();
+          player2.moveRight();
+          break;
+        case 's':
+          e.preventDefault();
+          player2.moveDown();
+          break;
+        case 'w':
+          e.preventDefault();
+          player2.rotate();
+          break;
+        case 'shift':
+          e.preventDefault();
+          player2.hardDrop();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [player2, gameMode]);
 
   const handleTogglePause = () => {
-    togglePlayerPause();
+    player1.togglePause();
+    if (gameMode === '2-player') {
+      player2.togglePause();
+    }
   };
 
   const handleReset = () => {
-    resetPlayerGame();
-    setPrevPlayerLines(0);
-    setPrevOpponentLines(0);
-    setGameStarted(false);
+    player1.resetGame();
+    if (gameMode === '2-player') {
+      player2.resetGame();
+    }
+    setPrevPlayer1Lines(0);
+    setPrevPlayer2Lines(0);
   };
 
-  const handleLeaveRoom = async () => {
-    await leaveRoom();
-    setGameStarted(false);
-    resetPlayerGame();
-    setPrevPlayerLines(0);
-    setPrevOpponentLines(0);
+  const handleBackToMenu = () => {
+    setGameMode(null);
+    player1.resetGame();
+    player2.resetGame();
+    setPrevPlayer1Lines(0);
+    setPrevPlayer2Lines(0);
   };
 
-  if (!gameStarted) {
+  if (!gameMode) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <MultiplayerLobby
-          onCreateRoom={createRoom}
-          onJoinRoom={joinRoom}
-          roomCode={roomCode}
-          isHost={isHost}
-          opponentConnected={opponentConnected}
-        />
+        <GameModeSelector onSelectMode={setGameMode} />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      {showPlayerParticles && (
-        <HeartParticles onComplete={() => setShowPlayerParticles(false)} />
+      {showPlayer1Particles && (
+        <HeartParticles onComplete={() => setShowPlayer1Particles(false)} />
       )}
-      {showOpponentParticles && (
-        <HeartParticles onComplete={() => setShowOpponentParticles(false)} />
+      {showPlayer2Particles && (
+        <HeartParticles onComplete={() => setShowPlayer2Particles(false)} />
       )}
       
       <div className="w-full max-w-7xl">
@@ -141,104 +149,118 @@ const Index = () => {
           <h1 className="text-4xl md:text-5xl font-bold neon-text mb-2" style={{ color: 'hsl(var(--neon-purple))' }}>
             TETRIS BATTLE
           </h1>
-          <p className="text-muted-foreground">Player vs Computer</p>
+          <p className="text-muted-foreground">
+            {gameMode === '1-player' ? 'Single Player' : 'Player 1 vs Player 2'}
+          </p>
         </div>
 
         {/* Game Controls - Centered */}
-        <div className="max-w-xs mx-auto mb-6">
+        <div className="max-w-xs mx-auto mb-6 space-y-2">
           <GameControls
-            isPaused={playerState.isPaused}
-            isGameOver={playerState.isGameOver}
+            isPaused={player1.gameState.isPaused}
+            isGameOver={player1.gameState.isGameOver || (gameMode === '2-player' && player2.gameState.isGameOver)}
             onTogglePause={handleTogglePause}
             onReset={handleReset}
           />
+          <button
+            onClick={handleBackToMenu}
+            className="w-full px-4 py-2 rounded-md text-sm"
+            style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+          >
+            Back to Menu
+          </button>
         </div>
 
         {/* Game Over Message */}
-        {(playerState.isGameOver || opponentGameState?.isGameOver) && (
+        {(player1.gameState.isGameOver || (gameMode === '2-player' && player2.gameState.isGameOver)) && (
           <div className="glass-card text-center py-6 mb-6 max-w-md mx-auto">
             <p className="text-2xl font-bold text-destructive neon-text mb-2">GAME OVER</p>
-            <p className="text-lg text-foreground font-semibold">
-              {playerState.isGameOver && !opponentGameState?.isGameOver
-                ? '😢 You Lost!'
-                : !playerState.isGameOver && opponentGameState?.isGameOver
-                ? '🎉 You Win!'
-                : playerState.score > (opponentGameState?.score || 0)
-                ? '🎉 You Win!'
-                : (opponentGameState?.score || 0) > playerState.score
-                ? '😢 You Lost!'
-                : "It's a Tie!"}
-            </p>
-            <div className="mt-4 flex justify-center gap-8 text-sm">
-              <div>
-                <p className="text-muted-foreground">Your Score</p>
-                <p className="text-xl font-bold text-primary">{playerState.score.toLocaleString()}</p>
+            {gameMode === '1-player' ? (
+              <div className="mt-4">
+                <p className="text-lg text-foreground font-semibold mb-2">Final Score</p>
+                <p className="text-3xl font-bold text-primary">{player1.gameState.score.toLocaleString()}</p>
               </div>
-              <div>
-                <p className="text-muted-foreground">Opponent Score</p>
-                <p className="text-xl font-bold text-secondary">{opponentGameState?.score.toLocaleString() || 0}</p>
-              </div>
-            </div>
-            <Button
-              onClick={handleLeaveRoom}
-              className="mt-4"
-              style={{ backgroundColor: 'hsl(var(--neon-pink))' }}
-            >
-              Leave Room
-            </Button>
+            ) : (
+              <>
+                <p className="text-lg text-foreground font-semibold">
+                  {player1.gameState.isGameOver && !player2.gameState.isGameOver
+                    ? '🎉 Player 2 Wins!'
+                    : !player1.gameState.isGameOver && player2.gameState.isGameOver
+                    ? '🎉 Player 1 Wins!'
+                    : player1.gameState.score > player2.gameState.score
+                    ? '🎉 Player 1 Wins!'
+                    : player2.gameState.score > player1.gameState.score
+                    ? '🎉 Player 2 Wins!'
+                    : "It's a Tie!"}
+                </p>
+                <div className="mt-4 flex justify-center gap-8 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Player 1 Score</p>
+                    <p className="text-xl font-bold text-primary">{player1.gameState.score.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Player 2 Score</p>
+                    <p className="text-xl font-bold text-secondary">{player2.gameState.score.toLocaleString()}</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
-        {/* Main Game Area - Two Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* Player Side */}
+        {/* Main Game Area */}
+        <div className={`grid gap-6 lg:gap-8 ${gameMode === '2-player' ? 'grid-cols-1 lg:grid-cols-2' : 'max-w-md mx-auto'}`}>
+          {/* Player 1 */}
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-2xl font-bold neon-text" style={{ color: 'hsl(var(--neon-cyan))' }}>
-                PLAYER
+                {gameMode === '1-player' ? 'PLAYER' : 'PLAYER 1'}
               </h2>
+              {gameMode === '2-player' && (
+                <p className="text-sm text-muted-foreground">Arrow Keys + Space</p>
+              )}
             </div>
             
             <div className="grid grid-cols-[1fr,auto] gap-4">
-              <TetrisBoard board={playerState.board} currentPiece={playerState.currentPiece} />
+              <TetrisBoard board={player1.gameState.board} currentPiece={player1.gameState.currentPiece} />
               
               <div className="space-y-4">
                 <GameStats
-                  score={playerState.score}
-                  level={playerState.level}
-                  linesCleared={playerState.linesCleared}
+                  score={player1.gameState.score}
+                  level={player1.gameState.level}
+                  linesCleared={player1.gameState.linesCleared}
                   playerName="Stats"
                 />
-                <NextPieceDisplay nextPiece={playerState.nextPiece} />
+                <NextPieceDisplay nextPiece={player1.gameState.nextPiece} />
               </div>
             </div>
           </div>
 
-          {/* Opponent Side */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-bold neon-text" style={{ color: 'hsl(var(--neon-orange))' }}>
-                OPPONENT
-              </h2>
-            </div>
-            
-            <div className="grid grid-cols-[1fr,auto] gap-4">
-              <TetrisBoard 
-                board={opponentGameState?.board || playerState.board} 
-                currentPiece={opponentGameState?.currentPiece || null} 
-              />
+          {/* Player 2 (only in 2-player mode) */}
+          {gameMode === '2-player' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-bold neon-text" style={{ color: 'hsl(var(--neon-orange))' }}>
+                  PLAYER 2
+                </h2>
+                <p className="text-sm text-muted-foreground">WASD + Shift</p>
+              </div>
               
-              <div className="space-y-4">
-                <GameStats
-                  score={opponentGameState?.score || 0}
-                  level={opponentGameState?.level || 1}
-                  linesCleared={opponentGameState?.linesCleared || 0}
-                  playerName="Stats"
-                />
-                <NextPieceDisplay nextPiece={opponentGameState?.nextPiece || null} />
+              <div className="grid grid-cols-[1fr,auto] gap-4">
+                <TetrisBoard board={player2.gameState.board} currentPiece={player2.gameState.currentPiece} />
+                
+                <div className="space-y-4">
+                  <GameStats
+                    score={player2.gameState.score}
+                    level={player2.gameState.level}
+                    linesCleared={player2.gameState.linesCleared}
+                    playerName="Stats"
+                  />
+                  <NextPieceDisplay nextPiece={player2.gameState.nextPiece} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
