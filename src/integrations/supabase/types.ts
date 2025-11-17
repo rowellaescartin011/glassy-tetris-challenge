@@ -17,7 +17,7 @@ export type Database = {
       game_rooms: {
         Row: {
           created_at: string
-          host_user_id: string | null
+          host_user_id: string
           id: string
           room_code: string
           started_at: string | null
@@ -25,7 +25,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          host_user_id?: string | null
+          host_user_id: string
           id?: string
           room_code: string
           started_at?: string | null
@@ -33,7 +33,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          host_user_id?: string | null
+          host_user_id?: string
           id?: string
           room_code?: string
           started_at?: string | null
