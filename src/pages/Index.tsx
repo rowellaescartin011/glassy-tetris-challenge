@@ -18,12 +18,7 @@ const Index = () => {
   const { user, loading } = useAuth();
   const [gameMode, setGameMode] = useState<'1-player' | '2-player' | null>(null);
   
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
+  // No auth required - guest mode enabled
 
   const player1 = useTetrisGame();
   const player2 = useTetrisGame2P(gameMode === '2-player');
@@ -146,22 +141,21 @@ const Index = () => {
     navigate('/auth');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
-  }
 
   if (!gameMode) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex gap-2">
+        {user ? (
           <Button onClick={handleLogout} variant="outline">
             Logout
           </Button>
-        </div>
+        ) : (
+          <Button onClick={() => navigate('/auth')} variant="outline">
+            Login
+          </Button>
+        )}
+      </div>
         <GameModeSelector onSelectMode={setGameMode} />
       </div>
     );
@@ -169,10 +163,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
-        <Button onClick={handleLogout} variant="outline">
-          Logout
-        </Button>
+      <div className="absolute top-4 right-4 flex gap-2">
+        {user ? (
+          <Button onClick={handleLogout} variant="outline">
+            Logout
+          </Button>
+        ) : (
+          <Button onClick={() => navigate('/auth')} variant="outline">
+            Login
+          </Button>
+        )}
       </div>
       
       {showPlayer1Particles && (
