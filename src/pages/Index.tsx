@@ -10,6 +10,7 @@ import { GameStats } from '@/components/GameStats';
 import { GameControls } from '@/components/GameControls';
 import { HeartParticles } from '@/components/HeartParticles';
 import { GameModeSelector } from '@/components/GameModeSelector';
+import { MobileControls } from '@/components/MobileControls';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
@@ -271,6 +272,16 @@ const Index = () => {
                 <NextPieceDisplay nextPiece={player1.gameState.nextPiece} />
               </div>
             </div>
+
+            {/* Mobile Controls for Player 1 */}
+            <MobileControls
+              onMoveLeft={player1.moveLeft}
+              onMoveRight={player1.moveRight}
+              onMoveDown={player1.moveDown}
+              onRotate={player1.rotate}
+              onHardDrop={player1.hardDrop}
+              disabled={player1.gameState.isGameOver || player1.gameState.isPaused}
+            />
           </div>
 
           {/* Player 2 (only in 2-player mode) */}
@@ -296,6 +307,16 @@ const Index = () => {
                   <NextPieceDisplay nextPiece={player2.gameState.nextPiece} />
                 </div>
               </div>
+
+              {/* Mobile Controls for Player 2 */}
+              <MobileControls
+                onMoveLeft={player2.moveLeft}
+                onMoveRight={player2.moveRight}
+                onMoveDown={player2.moveDown}
+                onRotate={player2.rotate}
+                onHardDrop={player2.hardDrop}
+                disabled={player2.gameState.isGameOver || player2.gameState.isPaused}
+              />
             </div>
           )}
         </div>
