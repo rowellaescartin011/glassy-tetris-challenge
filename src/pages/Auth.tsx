@@ -114,10 +114,18 @@ const Auth = () => {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Login" : "Sign Up"}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate('/')}
+            >
+              Continue as Guest
+            </Button>
           </form>
           <Button
             variant="link"
-            className="w-full mt-4"
+            className="w-full mt-2"
             onClick={() => setIsLogin(!isLogin)}
           >
             {isLogin ? "Need an account? Sign up" : "Already have an account? Login"}
