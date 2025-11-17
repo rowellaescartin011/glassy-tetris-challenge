@@ -13,7 +13,10 @@ export const useGameRoomCleanup = (roomId: string | null) => {
         .eq('id', roomId);
       
       if (error) {
-        console.error('Failed to cleanup room:', error);
+        // Only log in development to prevent exposing database details in production
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to cleanup room:', error);
+        }
       }
     };
 
