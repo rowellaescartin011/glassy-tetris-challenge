@@ -34,7 +34,7 @@ export const TetrisBoard = ({ board, currentPiece }: TetrisBoardProps) => {
             {row.map((cell, x) => (
               <div
                 key={`${y}-${x}`}
-                className="w-6 h-6 rounded-sm transition-all duration-150 backdrop-blur-sm"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-sm transition-all duration-150 backdrop-blur-sm"
                 style={{
                   backgroundColor: cell || 'rgba(255, 255, 255, 0.05)',
                   border: cell ? `2px solid ${cell}` : '1px solid rgba(255, 255, 255, 0.05)',

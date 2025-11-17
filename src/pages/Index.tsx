@@ -247,7 +247,7 @@ const Index = () => {
         )}
 
         {/* Main Game Area */}
-        <div className={`grid gap-6 lg:gap-8 ${gameMode === '2-player' ? 'grid-cols-1 lg:grid-cols-2' : 'max-w-md mx-auto'}`}>
+        <div className={`grid gap-6 lg:gap-8 ${gameMode === '2-player' ? 'grid-cols-1 lg:grid-cols-2' : 'max-w-2xl mx-auto'}`}>
           {/* Player 1 */}
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
