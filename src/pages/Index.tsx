@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTetrisGame } from '@/hooks/useTetrisGame';
 import { useTetrisGame2P } from '@/hooks/useTetrisGame2P';
+import { useComputerPlayer } from '@/hooks/useComputerPlayer';
 import { TetrisBoard } from '@/components/TetrisBoard';
 import { NextPieceDisplay } from '@/components/NextPieceDisplay';
 import { GameStats } from '@/components/GameStats';
@@ -16,12 +17,22 @@ import { Button } from '@/components/ui/button';
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [gameMode, setGameMode] = useState<'1-player' | '2-player' | null>(null);
+  const [gameMode, setGameMode] = useState<'1-player' | '2-player' | 'vs-computer' | null>(null);
   
   // No auth required - guest mode enabled
 
   const player1 = useTetrisGame();
-  const player2 = useTetrisGame2P(gameMode === '2-player');
+  const player2 = useTetrisGame2P(gameMode === '2-player' || gameMode === 'vs-computer');
+
+  // Computer AI for vs-computer mode
+  useComputerPlayer({
+    gameState: player2.gameState,
+    moveLeft: player2.moveLeft,
+    moveRight: player2.moveRight,
+    rotate: player2.rotate,
+    hardDrop: player2.hardDrop,
+    enabled: gameMode === 'vs-computer'
+  });
 
   const [showPlayer1Particles, setShowPlayer1Particles] = useState(false);
   const [showPlayer2Particles, setShowPlayer2Particles] = useState(false);
@@ -114,14 +125,14 @@ const Index = () => {
 
   const handleTogglePause = () => {
     player1.togglePause();
-    if (gameMode === '2-player') {
+    if (gameMode === '2-player' || gameMode === 'vs-computer') {
       player2.togglePause();
     }
   };
 
   const handleReset = () => {
     player1.resetGame();
-    if (gameMode === '2-player') {
+    if (gameMode === '2-player' || gameMode === 'vs-computer') {
       player2.resetGame();
     }
     setPrevPlayer1Lines(0);
@@ -188,7 +199,7 @@ const Index = () => {
             TETRIS BATTLE
           </h1>
           <p className="text-muted-foreground">
-            {gameMode === '1-player' ? 'Single Player' : 'Player 1 vs Player 2'}
+            {gameMode === '1-player' ? 'Single Player' : gameMode === 'vs-computer' ? 'Player vs Computer' : 'Player 1 vs Player 2'}
           </p>
         </div>
 
@@ -196,7 +207,7 @@ const Index = () => {
         <div className="max-w-xs mx-auto mb-6 space-y-2">
           <GameControls
             isPaused={player1.gameState.isPaused}
-            isGameOver={player1.gameState.isGameOver || (gameMode === '2-player' && player2.gameState.isGameOver)}
+            isGameOver={player1.gameState.isGameOver || ((gameMode === '2-player' || gameMode === 'vs-computer') && player2.gameState.isGameOver)}
             onTogglePause={handleTogglePause}
             onReset={handleReset}
           />
@@ -210,7 +221,7 @@ const Index = () => {
         </div>
 
         {/* Game Over Message */}
-        {(player1.gameState.isGameOver || (gameMode === '2-player' && player2.gameState.isGameOver)) && (
+        {(player1.gameState.isGameOver || ((gameMode === '2-player' || gameMode === 'vs-computer') && player2.gameState.isGameOver)) && (
           <div className="glass-card text-center py-6 mb-6 max-w-md mx-auto">
             <p className="text-2xl font-bold text-destructive neon-text mb-2">GAME OVER</p>
             {gameMode === '1-player' ? (
@@ -218,6 +229,30 @@ const Index = () => {
                 <p className="text-lg text-foreground font-semibold mb-2">Final Score</p>
                 <p className="text-3xl font-bold text-primary">{player1.gameState.score.toLocaleString()}</p>
               </div>
+            ) : gameMode === 'vs-computer' ? (
+              <>
+                <p className="text-lg text-foreground font-semibold">
+                  {player1.gameState.isGameOver && !player2.gameState.isGameOver
+                    ? '🤖 Computer Wins!'
+                    : !player1.gameState.isGameOver && player2.gameState.isGameOver
+                    ? '🎉 You Win!'
+                    : player1.gameState.score > player2.gameState.score
+                    ? '🎉 You Win!'
+                    : player2.gameState.score > player1.gameState.score
+                    ? '🤖 Computer Wins!'
+                    : "It's a Tie!"}
+                </p>
+                <div className="mt-4 flex justify-center gap-8 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Your Score</p>
+                    <p className="text-xl font-bold text-primary">{player1.gameState.score.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Computer Score</p>
+                    <p className="text-xl font-bold text-secondary">{player2.gameState.score.toLocaleString()}</p>
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 <p className="text-lg text-foreground font-semibold">
@@ -247,12 +282,12 @@ const Index = () => {
         )}
 
         {/* Main Game Area */}
-        <div className={`grid gap-6 lg:gap-8 ${gameMode === '2-player' ? 'grid-cols-1 lg:grid-cols-2' : 'max-w-2xl mx-auto'}`}>
+        <div className={`grid gap-6 lg:gap-8 ${(gameMode === '2-player' || gameMode === 'vs-computer') ? 'grid-cols-1 lg:grid-cols-2' : 'max-w-2xl mx-auto'}`}>
           {/* Player 1 */}
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-2xl font-bold neon-text" style={{ color: 'hsl(var(--neon-cyan))' }}>
-                {gameMode === '1-player' ? 'PLAYER' : 'PLAYER 1'}
+                {gameMode === '1-player' ? 'PLAYER' : gameMode === 'vs-computer' ? 'YOU' : 'PLAYER 1'}
               </h2>
               {gameMode === '2-player' && (
                 <p className="text-sm text-muted-foreground">Arrow Keys + Space</p>
@@ -284,14 +319,16 @@ const Index = () => {
             />
           </div>
 
-          {/* Player 2 (only in 2-player mode) */}
-          {gameMode === '2-player' && (
+          {/* Player 2 or Computer (in 2-player or vs-computer mode) */}
+          {(gameMode === '2-player' || gameMode === 'vs-computer') && (
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-2xl font-bold neon-text" style={{ color: 'hsl(var(--neon-orange))' }}>
-                  PLAYER 2
+                  {gameMode === 'vs-computer' ? 'COMPUTER' : 'PLAYER 2'}
                 </h2>
-                <p className="text-sm text-muted-foreground">WASD + Shift</p>
+                {gameMode === '2-player' && (
+                  <p className="text-sm text-muted-foreground">WASD + Shift</p>
+                )}
               </div>
               
               <div className="grid grid-cols-[1fr,auto] gap-4">
@@ -308,15 +345,17 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Mobile Controls for Player 2 */}
-              <MobileControls
-                onMoveLeft={player2.moveLeft}
-                onMoveRight={player2.moveRight}
-                onMoveDown={player2.moveDown}
-                onRotate={player2.rotate}
-                onHardDrop={player2.hardDrop}
-                disabled={player2.gameState.isGameOver || player2.gameState.isPaused}
-              />
+              {/* Mobile Controls for Player 2 (only in 2-player mode, not vs-computer) */}
+              {gameMode === '2-player' && (
+                <MobileControls
+                  onMoveLeft={player2.moveLeft}
+                  onMoveRight={player2.moveRight}
+                  onMoveDown={player2.moveDown}
+                  onRotate={player2.rotate}
+                  onHardDrop={player2.hardDrop}
+                  disabled={player2.gameState.isGameOver || player2.gameState.isPaused}
+                />
+              )}
             </div>
           )}
         </div>

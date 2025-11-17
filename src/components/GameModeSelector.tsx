@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 interface GameModeSelectorProps {
-  onSelectMode: (mode: '1-player' | '2-player') => void;
+  onSelectMode: (mode: '1-player' | '2-player' | 'vs-computer') => void;
 }
 
 export const GameModeSelector = ({ onSelectMode }: GameModeSelectorProps) => {
@@ -21,6 +21,14 @@ export const GameModeSelector = ({ onSelectMode }: GameModeSelectorProps) => {
             style={{ backgroundColor: 'hsl(var(--neon-cyan))', color: 'hsl(var(--background))' }}
           >
             1 Player
+          </Button>
+
+          <Button
+            onClick={() => onSelectMode('vs-computer')}
+            className="w-full h-16 text-xl"
+            style={{ backgroundColor: 'hsl(var(--neon-orange))', color: 'hsl(var(--background))' }}
+          >
+            vs Computer
           </Button>
 
           <Button
