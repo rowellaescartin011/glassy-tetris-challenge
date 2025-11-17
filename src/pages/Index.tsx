@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useTetrisGame } from '@/hooks/useTetrisGame';
 import { useTetrisGame2P } from '@/hooks/useTetrisGame2P';
 import { useComputerPlayer } from '@/hooks/useComputerPlayer';
@@ -12,11 +9,8 @@ import { GameControls } from '@/components/GameControls';
 import { HeartParticles } from '@/components/HeartParticles';
 import { GameModeSelector } from '@/components/GameModeSelector';
 import { MobileControls } from '@/components/MobileControls';
-import { Button } from '@/components/ui/button';
 
 const Index = () => {
-  const navigate = useNavigate();
-  const { user, loading } = useAuth();
   const [gameMode, setGameMode] = useState<'1-player' | '2-player' | 'vs-computer' | null>(null);
   
   // No auth required - guest mode enabled
@@ -147,26 +141,11 @@ const Index = () => {
     setPrevPlayer2Lines(0);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
-  };
 
 
   if (!gameMode) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4 flex gap-2">
-        {user ? (
-          <Button onClick={handleLogout} variant="outline">
-            Logout
-          </Button>
-        ) : (
-          <Button onClick={() => navigate('/auth')} variant="outline">
-            Login
-          </Button>
-        )}
-      </div>
         <GameModeSelector onSelectMode={setGameMode} />
       </div>
     );
@@ -174,17 +153,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4 flex gap-2">
-        {user ? (
-          <Button onClick={handleLogout} variant="outline">
-            Logout
-          </Button>
-        ) : (
-          <Button onClick={() => navigate('/auth')} variant="outline">
-            Login
-          </Button>
-        )}
-      </div>
       
       {showPlayer1Particles && (
         <HeartParticles onComplete={() => setShowPlayer1Particles(false)} />
